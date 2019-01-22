@@ -10,6 +10,9 @@ import React from 'react';
 import Sections from './components/Sections';
 import config from './config';
 import Feed from './components/Feed';
+//import Article from './components/Article';
+import { topStories } from './api/nyt';
+// import LinearProgress from '@material-ui/core/LinearProgress';
 
 const { drawerWidth } = config.ui;
 

@@ -1,41 +1,43 @@
+import Avatar from '@material-ui/core/Avatar';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
-import grey from '@material-ui/core/colors/grey';
-import red from '@material-ui/core/colors/red';
+import Chip from '@material-ui/core/Chip';
 import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
-import { filter, find, join, lowerCase, lowerFirst, startCase } from 'lodash';
+import { find } from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
+import FeedLabel from './FeedLabel';
 
 const styles = theme => ({
-  categoryTitle: {
-    display: 'inline',
-    paddingLeft: theme.spacing.unit,
-    color: grey[700]
-  },
-  card: {
-
-  },
-  content: {
-
+  contentWrap: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'nowrap'
   },
   media: {
     width: 210,
     height: 140,
-    float: 'left'
+    flex: '0 1 auto'
+  },
+  content: {
+    flex: '1 1 auto'
   },
   actions: {
     display: 'flex',
   },
-  avatar: {
-    backgroundColor: red[500],
+  byline: {
+    minWidth: 210
+  },
+  chip: {
+    margin: theme.spacing.unit,
   },
 })
 
@@ -49,17 +51,11 @@ class Feed extends React.Component {
   state = { }
 
   render() {
-    const { category, items, props } = this;
-    const { classes } = props;
+    const { items } = this;
 
     return (
       <div>
-        <Typography variant="h6" color="inherit" gutterBottom noWrap>
-          Top Stories
-          <Typography variant="subtitle1" component="span" className={classes.categoryTitle}>
-            ({category})
-          </Typography>
-        </Typography>
+        <FeedLabel />
         {items.map(item => this.renderItem(item))}
       </div>
     );
@@ -74,25 +70,28 @@ class Feed extends React.Component {
     const { classes } = this.props;
     const { url } = find(multimedia, {format: "mediumThreeByTwo210"});
     const published = moment(published_date).format("MMMM D, YYYY h:mma");
-    const author = lowerFirst(startCase(lowerCase(byline || '')));
-    const subheader = join(filter([published, author]), ' ');
 
     return (
-      <Card className={classes.card}>
-        <CardMedia className={classes.media} image={url} title={title} />
-        <div className={classes.content}>
-          <CardHeader
-            title={title} subheader={subheader} action={
-              <IconButton>
-                <OpenInNewIcon />
-              </IconButton>
-            }
-          />
-          <CardContent>
-            <Typography component="p">{abstract} </Typography>
-          </CardContent>
-          <CardActions className={classes.actions} disableActionSpacing></CardActions>
+      <Card key={item.url}>
+        <div className={classes.contentWrap}>
+          <CardMedia className={classes.media} image={url} title={title} />
+          <div className={classes.content}>
+            <CardHeader
+              title={title} subheader={published} action={
+                <Tooltip title="Read more...">
+                  <IconButton><OpenInNewIcon /></IconButton>
+                </Tooltip>
+              }
+            />
+            <CardContent>
+              <Typography component="p">{abstract}</Typography>
+            </CardContent>
+          </div>
         </div>
+        <CardActions className={classes.actions} disableActionSpacing>
+          {byline && <Typography component="span" variant="body1" color="textSecondary" className={classes.byline}>{byline}</Typography>}
+          {(des_facet || []).map(tag => <Chip key={tag} avatar={<Avatar>#</Avatar>} label={tag} className={classes.chip} />)}
+        </CardActions>
       </Card>
     )
   }
