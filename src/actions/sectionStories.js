@@ -3,7 +3,7 @@ import { filter, cloneDeep } from 'lodash';
 export const SECTION_REQUESTED = 'SECTION_REQUESTED';
 export const SECTION_FULFILLED = 'SECTION_FULFILLED';
 
-export const fetchSection = (section) => async (dispatch, getState) => {
+export const displaySection = section => async (dispatch, getState) => {
   const { stories, sectionStories } = getState();
   const { title, level } = section;
   let _sectionStories = sectionStories[title];
@@ -17,4 +17,14 @@ export const fetchSection = (section) => async (dispatch, getState) => {
   }
 
   dispatch({ type: SECTION_FULFILLED, section, stories: _sectionStories });
+}
+
+export const displayLastSection = () => async (dispatch, getState) => {
+  const { selectedSection } = getState();
+
+  if (!selectedSection) {
+    return;
+  }
+
+  dispatch(displaySection(selectedSection));
 }

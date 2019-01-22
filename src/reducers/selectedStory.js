@@ -1,25 +1,21 @@
 import { TOP_STORIES_REQUESTED, TOP_STORIES_FULFILLED } from '../actions/topStories';
 import { SECTION_REQUESTED, SECTION_FULFILLED } from '../actions/sectionStories';
+import { STORY_REQUESTED, STORY_FULFILLED } from '../actions/storyContents';
 
-const defaultState = {};
+const defaultState = null;
 
-export function sectionStories(state = {...defaultState}, action) {
-  const { type, section, stories } = action;
+export function selectedStory(state = defaultState, action) {
+  const { type, story } = action;
 
   switch (type) {
     case TOP_STORIES_REQUESTED:
     case TOP_STORIES_FULFILLED:
-      return {...defaultState};
     case SECTION_REQUESTED:
-      return {
-        ...state,
-        [section.title]: []
-      };
     case SECTION_FULFILLED:
-      return {
-        ...state,
-        [section.title]: stories
-      };
+      return defaultState;
+    case STORY_REQUESTED:
+    case STORY_FULFILLED:
+      return story;
     default:
       return state;
   }

@@ -13,6 +13,7 @@ import Feed from './components/Feed';
 import { connect } from 'react-redux';
 import { fetchStories } from './actions/topStories';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Article from './components/Article';
 
 const { drawerWidth } = config.ui;
 
@@ -42,7 +43,8 @@ const styles = theme => ({
 });
 
 const mapStateToProps = state => ({
-  fetching: state.fetching
+  fetching: state.fetching,
+  showFeed: !state.selectedStory
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -55,6 +57,7 @@ class App extends React.Component {
       classes: PropTypes.object.isRequired,
       fetching: PropTypes.bool.isRequired,
       bootstrap: PropTypes.func.isRequired,
+      showFeed: PropTypes.bool.isRequired,
     }
   }
 
@@ -65,7 +68,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { classes, fetching } = this.props;
+    const { classes, fetching, showFeed } = this.props;
 
     return (
       <div className={classes.root}>
@@ -86,11 +89,11 @@ class App extends React.Component {
           }}
         >
           <div className={classes.toolbar} />
-          {!fetching && <Sections />}
+          <Sections />
         </Drawer>
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          {fetching ? <LinearProgress /> : <Feed />}
+          {fetching ? <LinearProgress /> : (showFeed ? <Feed /> : <Article />)}
         </main>
       </div>
     );

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import cheerio from 'cheerio';
 import config from '../config';
 import { filter, uniq, map, mapValues, groupBy, isEmpty } from 'lodash';
 
@@ -31,4 +32,16 @@ export async function topStories() {
   });
 
   return { stories, sections };
+}
+
+export async function storyContents(url) {
+  const { data } = await axios.get(
+    `https://cors-anywhere.herokuapp.com/${url}`
+  );
+
+  const $sizzle = cheerio.load(data);
+
+  return $sizzle('section[name="articleBody"] p')
+    .map((index, paragraph) => $sizzle(paragraph).text())
+    .get();
 }

@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import config from '../config';
 import { connect } from 'react-redux';
-import { fetchSection } from '../actions/sectionStories';
+import { displaySection } from '../actions/sectionStories';
 
 const { drawerWidth } = config.ui;
 
@@ -30,7 +30,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  selectItem: item => dispatch(fetchSection(item))
+  selectItem: item => dispatch(displaySection(item))
 });
 
 class Sections extends React.Component {

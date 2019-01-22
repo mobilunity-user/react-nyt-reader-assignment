@@ -16,6 +16,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import FeedLabel from './FeedLabel';
 import { connect } from 'react-redux';
+import { displayStory } from '../actions/storyContents';
 
 const styles = theme => ({
   card: {
@@ -57,6 +58,10 @@ const mapStateToProps = state => {
   return { items };
 };
 
+const mapDispatchToProps = dispatch => ({
+  display: story => dispatch(displayStory(story))
+});
+
 class Feed extends React.Component {
   static get propTypes() {
     return {
@@ -82,19 +87,19 @@ class Feed extends React.Component {
       byline, multimedia, des_facet
     } = item;
 
-    const { classes } = this.props;
-    const { url } = find(multimedia, {format: "mediumThreeByTwo210"});
+    const { classes, display } = this.props;
+    const { url } = find(multimedia, {format: "mediumThreeByTwo210"}) || {};
     const published = moment(published_date).format("MMMM D, YYYY h:mma");
 
     return (
       <Card key={item.url} className={classes.card}>
         <div className={classes.contentWrap}>
-          <CardMedia className={classes.media} image={url} title={title} />
+          {url && <CardMedia className={classes.media} image={url} title={title} />}
           <div className={classes.content}>
             <CardHeader
               title={title} subheader={published} action={
                 <Tooltip title="Read more...">
-                  <IconButton><OpenInNewIcon /></IconButton>
+                  <IconButton onClick={() => display(item)}><OpenInNewIcon /></IconButton>
                 </Tooltip>
               }
             />
@@ -112,4 +117,4 @@ class Feed extends React.Component {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps)(Feed));
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Feed));

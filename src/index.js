@@ -7,7 +7,9 @@ import { combineReducers, createStore, applyMiddleware } from 'redux';
 import { fetching } from './reducers/fetching';
 import { sections } from './reducers/sections';
 import { sectionStories } from './reducers/sectionStories';
+import { storiesContents } from './reducers/storiesContents';
 import { selectedSection } from './reducers/selectedSection';
+import { selectedStory } from './reducers/selectedStory';
 import { stories } from './reducers/stories';
 import { Provider } from 'react-redux'
 import * as serviceWorker from './serviceWorker';
@@ -15,7 +17,8 @@ import * as serviceWorker from './serviceWorker';
 const store = createStore(
   combineReducers({
     fetching, sections, sectionStories,
-    selectedSection, stories
+    selectedSection, selectedStory,
+    stories, storiesContents
   }),
   applyMiddleware(
     thunkMiddleware
