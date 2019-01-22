@@ -8,6 +8,8 @@ import Collapse from '@material-ui/core/Collapse';
 import PropTypes from 'prop-types';
 import React from 'react';
 import config from '../config';
+import { connect } from 'react-redux';
+import { fetchSection } from '../actions/sectionStories';
 
 const { drawerWidth } = config.ui;
 
@@ -20,59 +22,76 @@ const styles = theme => ({
   nested: {
     paddingLeft: `${theme.spacing.unit * 2}px !important`,
   },
-})
+});
+
+const mapStateToProps = state => ({
+  items: state.sections,
+  selected: state.selectedSection
+});
+
+const mapDispatchToProps = dispatch => ({
+  selectItem: item => dispatch(fetchSection(item))
+});
 
 class Sections extends React.Component {
   static get propTypes() {
     return {
-      classes: PropTypes.object.isRequired
+      classes: PropTypes.object.isRequired,
+      items: PropTypes.array.isRequired,
+      selectedSection: PropTypes.object
     }
   }
 
-  state = { opened: null, selected: null }
+  state = { opened: null }
 
   onItemClick(item) {
     const { children } = item;
+    const { selectItem } = this.props;
 
     if (children) {
       this.toggleItem(item);
     }
 
-    this.selectItem(item);
+    selectItem(item);
   }
 
-  toggleItem({ title }) {
-    this.setState(state => ({
-      ...state, opened: (state.opened === title)
-        ? null : title
-    }))
-  }
+  toggleItem(item) {
+    this.setState(state => {
+      let { opened } = state;
+      const { title } = item;
 
-  selectItem({ title }) {
-    this.setState(state => ({ ...state, selected: title }))
+      if (opened && (opened.title === title)) {
+        opened = null;
+      } else {
+        opened = item;
+      }
+
+      return { ...state, opened };
+    });
   }
 
   isOpened({ title }) {
-    const { state } = this;
+    const { opened } = this.state;
 
-    return state.opened === title;
+    if (!opened) {
+      return false;
+    }
+
+    return opened.title === title;
   }
 
   isSelected({ title }) {
-    const { state } = this;
+    const { selected } = this.props;
 
-    return state.selected === title;
+    if (!selected) {
+      return false;
+    }
+
+    return selected.title === title;
   }
 
   render() {
-    const items = [{
-      title: 'U.S.',
-      children: [{
-        title: 'Politics'
-      }]
-    }, {
-      title: 'Business'
-    }];
+    const { items } = this.props;
 
     return (
       <List component="nav">{items.map(item => this.renderItem(item))}</List>
@@ -111,4 +130,4 @@ class Sections extends React.Component {
   }
 }
 
-export default withStyles(styles)(Sections);
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Sections));

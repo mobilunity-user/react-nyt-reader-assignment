@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../config';
-import { filter, uniq, map, mapValues, groupBy } from 'lodash';
+import { filter, uniq, map, mapValues, groupBy, isEmpty } from 'lodash';
 
 const { apiKey } = config.apis.nyt;
 const nytApi = axios.create({
@@ -18,10 +18,12 @@ export async function topStories() {
   );
 
   const sections = map(uniq(map(stories, 'section')), title => {
-    let data = { title };
-    const children = subSections[title];
+    let data = { title, level: 0 };
+    let children = subSections[title];
 
-    if (children && children.length) {
+    if (!isEmpty(children)) {
+      children = map(children, title => ({ title, level: 1 }));
+
       data = { ...data, children };
     }
 

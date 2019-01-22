@@ -10,9 +10,9 @@ import React from 'react';
 import Sections from './components/Sections';
 import config from './config';
 import Feed from './components/Feed';
-//import Article from './components/Article';
-import { topStories } from './api/nyt';
-// import LinearProgress from '@material-ui/core/LinearProgress';
+import { connect } from 'react-redux';
+import { fetchStories } from './actions/topStories';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const { drawerWidth } = config.ui;
 
@@ -41,15 +41,31 @@ const styles = theme => ({
   toolbar: theme.mixins.toolbar,
 });
 
+const mapStateToProps = state => ({
+  fetching: state.fetching
+});
+
+const mapDispatchToProps = dispatch => ({
+  bootstrap: () => dispatch(fetchStories())
+});
+
 class App extends React.Component {
   static get propTypes() {
     return {
-      classes: PropTypes.object.isRequired
+      classes: PropTypes.object.isRequired,
+      fetching: PropTypes.bool.isRequired,
+      bootstrap: PropTypes.func.isRequired,
     }
   }
 
+  componentWillMount() {
+    const { bootstrap } = this.props;
+
+    bootstrap();
+  }
+
   render() {
-    const { classes } = this.props;
+    const { classes, fetching } = this.props;
 
     return (
       <div className={classes.root}>
@@ -70,15 +86,15 @@ class App extends React.Component {
           }}
         >
           <div className={classes.toolbar} />
-          <Sections />
+          {!fetching && <Sections />}
         </Drawer>
         <main className={classes.content}>
           <div className={classes.toolbar} />
-          <Feed />
+          {fetching ? <LinearProgress /> : <Feed />}
         </main>
       </div>
     );
   }
 }
 
-export default withStyles(styles)(App);
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(App));

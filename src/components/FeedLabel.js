@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { connect } from 'react-redux';
 
 const styles = theme => ({
   categoryTitle: {
@@ -10,32 +11,32 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit,
     color: grey[700]
   }
-})
+});
+
+const mapStateToProps = state => ({
+  category: state.selectedSection
+});
 
 class FeedLabel extends React.Component {
   static get propTypes() {
     return {
-      classes: PropTypes.object.isRequired
+      classes: PropTypes.object.isRequired,
+      category: PropTypes.object
     }
   }
 
-  state = { }
-
   render() {
-    const { category, props } = this;
-    const { classes } = props;
+    const { classes, category } = this.props;
 
     return (
       <Typography variant="h6" color="inherit" gutterBottom noWrap>
         Top Stories
-        <Typography variant="subtitle1" component="span" className={classes.categoryTitle}>
-          ({category})
-        </Typography>
+        {category && <Typography variant="subtitle1" component="span" className={classes.categoryTitle}>
+          ({category.title})
+        </Typography>}
       </Typography>
     );
   }
-
-  category = 'U.S.'
 }
 
-export default withStyles(styles)(FeedLabel);
+export default withStyles(styles)(connect(mapStateToProps)(FeedLabel));
