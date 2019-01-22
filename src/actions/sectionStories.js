@@ -1,5 +1,6 @@
 import { filter, cloneDeep } from 'lodash';
 
+export const ROOT_REQUESTED = 'ROOT_REQUESTED';
 export const SECTION_REQUESTED = 'SECTION_REQUESTED';
 export const SECTION_FULFILLED = 'SECTION_FULFILLED';
 
@@ -23,6 +24,7 @@ export const displayLastSection = () => async (dispatch, getState) => {
   const { selectedSection } = getState();
 
   if (!selectedSection) {
+    dispatch({ type: ROOT_REQUESTED });
     return;
   }
 
