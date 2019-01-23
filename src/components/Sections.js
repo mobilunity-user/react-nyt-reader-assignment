@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import config from '../config';
 import { connect } from 'react-redux';
+import { isEmpty } from 'lodash';
 import { displaySection, displayAll } from '../actions/sectionStories';
 
 const { drawerWidth } = config.ui;
@@ -96,7 +97,7 @@ class Sections extends React.Component {
 
     return (
       <List component="nav">
-        {items && items.length && (
+        {!isEmpty(items) && (
           <ListItem button selected={!selected} onClick={selectAll}>
             <ListItemText primary="All Stories" />
           </ListItem>
