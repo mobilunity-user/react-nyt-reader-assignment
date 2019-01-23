@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import config from '../config';
 import { connect } from 'react-redux';
-import { displaySection } from '../actions/sectionStories';
+import { displaySection, displayAll } from '../actions/sectionStories';
 
 const { drawerWidth } = config.ui;
 
@@ -30,7 +30,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  selectItem: item => dispatch(displaySection(item))
+  selectItem: item => dispatch(displaySection(item)),
+  selectAll: () => dispatch(displayAll())
 });
 
 class Sections extends React.Component {
@@ -91,10 +92,17 @@ class Sections extends React.Component {
   }
 
   render() {
-    const { items } = this.props;
+    const { items, selected, selectAll } = this.props;
 
     return (
-      <List component="nav">{items.map(item => this.renderItem(item))}</List>
+      <List component="nav">
+        {items && items.length && (
+          <ListItem button selected={!selected} onClick={selectAll}>
+            <ListItemText primary="All Stories" />
+          </ListItem>
+        )}
+        {items.map(item => this.renderItem(item))}
+      </List>
     );
   }
 

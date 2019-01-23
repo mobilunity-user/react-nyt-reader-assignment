@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import FeedLabel from './FeedLabel';
 import { connect } from 'react-redux';
-import { displayLastSection } from '../actions/sectionStories';
+import { displayLastOpened } from '../actions/sectionStories';
 
 const styles = theme => ({
   media: {
@@ -46,7 +46,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = dispatch => ({
-  goBack: () => dispatch(displayLastSection())
+  goBack: () => dispatch(displayLastOpened())
 });
 
 class Media extends React.Component {
@@ -59,10 +59,14 @@ class Media extends React.Component {
   }
 
   render() {
-    const { item, contents, goBack, classes } = this.props;
+    const {
+      item, contents,
+      goBack, classes,
+    } = this.props;
 
     const {
-      title, abstract, published_date,
+      title, abstract,
+      published_date,
       byline, multimedia
     } = item;
 
@@ -90,7 +94,7 @@ class Media extends React.Component {
             }
           </CardContent>
           <CardActions className={classes.actions} disableActionSpacing>
-          <Fab variant="extended" onClick={() => goBack()}>
+          <Fab variant="extended" onClick={goBack}>
             <ArrowBackIcon className={classes.backIcon} />
             Back to top stories
           </Fab>
