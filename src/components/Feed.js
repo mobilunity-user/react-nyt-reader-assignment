@@ -6,7 +6,6 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
 import Chip from '@material-ui/core/Chip';
 import IconButton from '@material-ui/core/IconButton';
-import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
@@ -14,9 +13,10 @@ import { find } from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
-import FeedLabel from './FeedLabel';
-import { connect } from 'react-redux';
 import { displayStory } from '../actions/storyContents';
+import FeedLabel from './FeedLabel';
+import decorate from '../api/decorate';
+import ScrollToTopOnMount from './ScrollToTopOnMount';
 
 const styles = theme => ({
   card: {
@@ -47,7 +47,7 @@ const styles = theme => ({
   },
 })
 
-const mapStateToProps = state => {
+const propsMap = state => {
   const { stories, selectedSection, sectionStories } = state;
   let items = stories;
 
@@ -58,7 +58,7 @@ const mapStateToProps = state => {
   return { items };
 };
 
-const mapDispatchToProps = dispatch => ({
+const actionsMap = dispatch => ({
   display: story => dispatch(displayStory(story))
 });
 
@@ -75,6 +75,7 @@ class Feed extends React.Component {
 
     return (
       <div>
+        <ScrollToTopOnMount />
         <FeedLabel />
         {items.map(item => this.renderItem(item))}
       </div>
@@ -117,4 +118,4 @@ class Feed extends React.Component {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Feed));
+export default decorate(Feed, { styles, propsMap, actionsMap });

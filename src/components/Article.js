@@ -3,17 +3,17 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
-import { withStyles } from '@material-ui/core/styles';
+import Fab from '@material-ui/core/Fab';
 import Typography from '@material-ui/core/Typography';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import Fab from '@material-ui/core/Fab';
 import { filter, find, join } from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
-import FeedLabel from './FeedLabel';
-import { connect } from 'react-redux';
 import { displayLastOpened } from '../actions/sectionStories';
+import decorate from '../api/decorate';
+import FeedLabel from './FeedLabel';
+import ScrollToTopOnMount from './ScrollToTopOnMount';
 
 const styles = theme => ({
   media: {
@@ -33,7 +33,7 @@ const styles = theme => ({
   }
 });
 
-const mapStateToProps = state => {
+const propsMap = state => {
   const { selectedStory, storiesContents } = state;
   const item = selectedStory;
   let contents = [];
@@ -45,11 +45,11 @@ const mapStateToProps = state => {
   return { item, contents };
 };
 
-const mapDispatchToProps = dispatch => ({
+const actionsMap = dispatch => ({
   goBack: () => dispatch(displayLastOpened())
 });
 
-class Media extends React.Component {
+class Article extends React.Component {
   static get propTypes() {
     return {
       classes: PropTypes.object.isRequired,
@@ -76,6 +76,7 @@ class Media extends React.Component {
 
     return (
       <div>
+        <ScrollToTopOnMount />
         <FeedLabel />
         <Card>
           <CardHeader title={title} subheader={subtitle} />
@@ -105,4 +106,4 @@ class Media extends React.Component {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Media));
+export default decorate(Article, { styles, propsMap, actionsMap });

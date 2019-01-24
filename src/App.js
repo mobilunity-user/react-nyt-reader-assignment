@@ -1,19 +1,18 @@
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
-import { withStyles } from '@material-ui/core/styles';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import ChromeReaderModeIcon from '@material-ui/icons/ChromeReaderMode';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { fetchStories } from './actions/topStories';
+import decorate from './api/decorate';
+import Article from './components/Article';
+import Feed from './components/Feed';
 import Sections from './components/Sections';
 import config from './config';
-import Feed from './components/Feed';
-import { connect } from 'react-redux';
-import { fetchStories } from './actions/topStories';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Article from './components/Article';
 
 const { drawerWidth } = config.ui;
 
@@ -42,12 +41,12 @@ const styles = theme => ({
   toolbar: theme.mixins.toolbar,
 });
 
-const mapStateToProps = state => ({
+const propsMap = state => ({
   fetching: state.fetching,
   showFeed: !state.selectedStory
 });
 
-const mapDispatchToProps = dispatch => ({
+const actionsMap = dispatch => ({
   bootstrap: () => dispatch(fetchStories())
 });
 
@@ -100,4 +99,4 @@ class App extends React.Component {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(App));
+export default decorate(App, { styles, propsMap, actionsMap });

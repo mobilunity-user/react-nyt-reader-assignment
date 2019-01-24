@@ -1,9 +1,8 @@
 import grey from '@material-ui/core/colors/grey';
-import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
+import decorate from '../api/decorate';
 
 const styles = theme => ({
   categoryTitle: {
@@ -13,7 +12,7 @@ const styles = theme => ({
   }
 });
 
-const mapStateToProps = state => ({
+const propsMap = state => ({
   category: state.selectedSection
 });
 
@@ -39,4 +38,4 @@ class FeedLabel extends React.Component {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps)(FeedLabel));
+export default decorate(FeedLabel, { styles, propsMap });
