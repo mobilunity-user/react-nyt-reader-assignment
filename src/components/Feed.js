@@ -9,16 +9,18 @@ import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
-import { find } from 'lodash';
+import { makeStyles } from '@material-ui/styles';
+import { find, partial } from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { connect } from 'react-redux';
 import { displayStory } from '../actions/storyContents';
+import { compose, withPropTypes } from '../api/enhance';
 import FeedLabel from './FeedLabel';
-import decorate from '../api/decorate';
 import ScrollToTopOnMount from './ScrollToTopOnMount';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   card: {
     marginBottom: theme.spacing.unit * 2
   },
@@ -45,53 +47,16 @@ const styles = theme => ({
   chip: {
     margin: theme.spacing.unit,
   },
-})
+}));
 
-const propsMap = state => {
-  const { stories, selectedSection, sectionStories } = state;
-  let items = stories;
+function Feed({ items, display }) {
+  const classes = useStyles();
 
-  if (selectedSection) {
-    items = sectionStories[selectedSection.title];
-  }
-
-  return { items };
-};
-
-const actionsMap = dispatch => ({
-  display: story => dispatch(displayStory(story))
-});
-
-class Feed extends React.Component {
-  static get propTypes() {
-    return {
-      classes: PropTypes.object.isRequired,
-      items: PropTypes.array.isRequired
-    }
-  }
-
-  render() {
-    const { items } = this.props;
-
-    return (
-      <div>
-        <ScrollToTopOnMount />
-        <FeedLabel />
-        {items.map(item => this.renderItem(item))}
-      </div>
-    );
-  }
-
-  renderItem(item) {
-    const {
-      title, abstract, published_date,
-      byline, multimedia, des_facet
-    } = item;
-
-    const { classes, display } = this.props;
+  const renderItem = item => {
+    const { title, abstract, published_date, byline, multimedia, des_facet } = item;
     const { url } = find(multimedia, {format: "mediumThreeByTwo210"}) || {};
     const published = moment(published_date).format("MMMM D, YYYY h:mma");
-
+  
     return (
       <Card key={item.url} className={classes.card}>
         <div className={classes.contentWrap}>
@@ -100,7 +65,7 @@ class Feed extends React.Component {
             <CardHeader
               title={title} subheader={published} action={
                 <Tooltip title="Read more...">
-                  <IconButton onClick={() => display(item)}><OpenInNewIcon /></IconButton>
+                  <IconButton onClick={partial(display, item)}><OpenInNewIcon /></IconButton>
                 </Tooltip>
               }
             />
@@ -116,6 +81,32 @@ class Feed extends React.Component {
       </Card>
     )
   }
+
+  return (
+    <div>
+      <ScrollToTopOnMount />
+      <FeedLabel />
+      {items.map(renderItem)}
+    </div>
+  );
 }
 
-export default decorate(Feed, { styles, propsMap, actionsMap });
+const enhance = compose(
+  connect(state => {
+    const { stories, selectedSection, sectionStories } = state;
+    let items = stories;
+  
+    if (selectedSection) {
+      items = sectionStories[selectedSection.title];
+    }
+  
+    return { items };
+  }, dispatch => ({
+    display: story => dispatch(displayStory(story))
+  })),
+  withPropTypes({
+    items: PropTypes.array
+  })
+);
+
+export default enhance(Feed);

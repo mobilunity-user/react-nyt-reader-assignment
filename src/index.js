@@ -1,31 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import theme from './theme';
+import store from './store';
 import './index.css';
 import App from './App';
-import thunkMiddleware from 'redux-thunk';
-import { combineReducers, createStore, applyMiddleware } from 'redux';
-import { fetching } from './reducers/fetching';
-import { sections } from './reducers/sections';
-import { sectionStories } from './reducers/sectionStories';
-import { storiesContents } from './reducers/storiesContents';
-import { selectedSection } from './reducers/selectedSection';
-import { selectedStory } from './reducers/selectedStory';
-import { stories } from './reducers/stories';
-import { Provider } from 'react-redux'
 import * as serviceWorker from './serviceWorker';
+import ThemeProvider from '@material-ui/styles/ThemeProvider';
 
-const store = createStore(
-  combineReducers({
-    fetching, sections, sectionStories,
-    selectedSection, selectedStory,
-    stories, storiesContents
-  }),
-  applyMiddleware(
-    thunkMiddleware
-  )
+
+ReactDOM.render(
+  <Provider store={store}>
+    <ThemeProvider theme={theme}>
+      <App />
+    </ThemeProvider>
+  </Provider>, 
+  document.getElementById('root')
 );
-
-ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

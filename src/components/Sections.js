@@ -4,16 +4,18 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import { isEmpty } from 'lodash';
+import { makeStyles } from '@material-ui/styles';
+import { isEmpty, partial } from 'lodash';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
 import { displayAll, displaySection } from '../actions/sectionStories';
-import decorate from '../api/decorate';
+import { compose, withPropTypes } from '../api/enhance';
 import config from '../config';
 
 const { drawerWidth } = config.ui;
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     width: '100%',
     maxWidth: drawerWidth,
@@ -22,120 +24,91 @@ const styles = theme => ({
   nested: {
     paddingLeft: `${theme.spacing.unit * 2}px !important`,
   },
-});
+}));
 
-const propsMap = state => ({
-  items: state.sections,
-  selected: state.selectedSection
-});
+function Sections({ items, selected, selectAll, selectItem }) {
+  const classes = useStyles();
+  const [opened, setOpened] = useState(null);
 
-const actionsMap = dispatch => ({
-  selectItem: item => dispatch(displaySection(item)),
-  selectAll: () => dispatch(displayAll())
-});
-
-class Sections extends React.Component {
-  static get propTypes() {
-    return {
-      classes: PropTypes.object.isRequired,
-      items: PropTypes.array.isRequired,
-      selectedSection: PropTypes.object
-    }
-  }
-
-  state = { opened: null }
-
-  onItemClick(item) {
+  const onItemClick = item => {
     const { children } = item;
-    const { selectItem } = this.props;
 
     if (children) {
-      this.toggleItem(item);
+      toggleItem(item);
     }
 
     selectItem(item);
-  }
+  };
 
-  toggleItem(item) {
-    this.setState(state => {
-      let { opened } = state;
-      const { title } = item;
+  const toggleItem = item => {
+    const { title } = item;
 
-      if (opened && (opened.title === title)) {
-        opened = null;
-      } else {
-        opened = item;
-      }
-
-      return { ...state, opened };
-    });
-  }
-
-  isOpened({ title }) {
-    const { opened } = this.state;
-
-    if (!opened) {
-      return false;
-    }
-
-    return opened.title === title;
-  }
-
-  isSelected({ title }) {
-    const { selected } = this.props;
-
-    if (!selected) {
-      return false;
-    }
-
-    return selected.title === title;
-  }
-
-  render() {
-    const { items, selected, selectAll } = this.props;
-
-    return (
-      <List component="nav">
-        {!isEmpty(items) && (
-          <ListItem button selected={!selected} onClick={selectAll}>
-            <ListItemText primary="All Stories" />
-          </ListItem>
-        )}
-        {items.map(item => this.renderItem(item))}
-      </List>
+    setOpened(
+      (opened && (opened.title === title)) 
+        ? null : item
     );
-  }
+  };
 
-  renderItem(item) {
+  const isOpened = item => !!opened 
+    && (opened.title === item.title);
+
+  const isSelected = item => !!selected 
+    && (selected.title === item.title);
+
+  const renderItem = item => {
     const { children, title } = item;
 
     return (
       <React.Fragment key={title}>
-        <ListItem button selected={this.isSelected(item)} onClick={() => this.onItemClick(item)}>
+        <ListItem button selected={isSelected(item)} onClick={partial(onItemClick, item)}>
           <ListItemText primary={title} />
-          {children && (this.isOpened(item) ? <ExpandLess /> : <ExpandMore />)}
+          {children && (isOpened(item) ? <ExpandLess /> : <ExpandMore />)}
         </ListItem>
-        {children && this.renderChildren(item)}
+        {children && renderChildren(item)}
       </React.Fragment>
     );
-  }
+  };
 
-  renderChildren(item) {
-    const { children } = item;
-    const { classes } = this.props;
+  const renderChildren = item => {
+    const { children } = item;    
 
     return (
-      <Collapse in={this.isOpened(item)} timeout="auto" unmountOnExit>
+      <Collapse in={isOpened(item)} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {children.map(item => (
-            <ListItem button key={item.title} selected={this.isSelected(item)} onClick={() => this.onItemClick(item)}>
+            <ListItem button key={item.title} selected={isSelected(item)} onClick={partial(onItemClick, item)}>
               <ListItemText inset primary={item.title} className={classes.nested} />
             </ListItem>
           ))}
         </List>
       </Collapse>
     );
-  }
+  };
+
+  return (
+    <List component="nav">
+      {!isEmpty(items) && (
+        <ListItem button selected={!selected} onClick={selectAll}>
+          <ListItemText primary="All Stories" />
+        </ListItem>
+      )}
+      {items.map(renderItem)}
+    </List>
+  );
 }
 
-export default decorate(Sections, { styles, propsMap, actionsMap });
+const enhance = compose(
+  connect(state => ({
+    items: state.sections,
+    selected: state.selectedSection
+  }), dispatch => ({
+    selectItem: item => dispatch(displaySection(item)),
+    selectAll: () => dispatch(displayAll())
+  })),
+  withPropTypes({
+    items: PropTypes.array,
+    selectedSection: PropTypes.object
+  }),
+);
+
+export default enhance(Sections);

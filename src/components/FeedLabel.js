@@ -1,41 +1,41 @@
 import grey from '@material-ui/core/colors/grey';
 import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/styles';
 import PropTypes from 'prop-types';
 import React from 'react';
-import decorate from '../api/decorate';
+import { connect } from 'react-redux';
+import { compose, withPropTypes } from '../api/enhance';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   categoryTitle: {
     display: 'inline',
     paddingLeft: theme.spacing.unit,
     color: grey[700]
   }
-});
+}));
 
-const propsMap = state => ({
-  category: state.selectedSection
-});
+function FeedLabel({ category }) {
+  const classes = useStyles();
 
-class FeedLabel extends React.Component {
-  static get propTypes() {
-    return {
-      classes: PropTypes.object.isRequired,
-      category: PropTypes.object
-    }
-  }
-
-  render() {
-    const { classes, category } = this.props;
-
-    return (
-      <Typography variant="h6" color="inherit" gutterBottom noWrap>
-        Top Stories
-        {category && <Typography variant="subtitle1" component="span" className={classes.categoryTitle}>
+  return (
+    <Typography variant="h6" color="inherit" gutterBottom noWrap>
+      Top Stories
+      {category && 
+        <Typography variant="subtitle1" component="span" className={classes.categoryTitle}>
           ({category.title})
-        </Typography>}
-      </Typography>
-    );
-  }
-}
+        </Typography>
+      }
+    </Typography>
+  );
+};
 
-export default decorate(FeedLabel, { styles, propsMap });
+const enhance = compose(
+  connect(state => ({
+    category: state.selectedSection
+  })),
+  withPropTypes({
+    category: PropTypes.object
+  }),
+);
+
+export default enhance(FeedLabel);
