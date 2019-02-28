@@ -1,15 +1,12 @@
 import { flow } from 'lodash';
 
+const setStatic = (key, value) => BaseComponent => {
+  BaseComponent[key] = value
+  return BaseComponent;
+};
+
 export const compose = flow;
 
-export function withPropTypes(propTypes = {}) {
-  return function (componentFn) {
-    Object.defineProperty(componentFn, 'propTypes', {
-      enumerable: true, get() { return propTypes; }
-    });
-
-    return componentFn;
-  }
-};
+export const withPropTypes = propTypes => setStatic('propTypes', propTypes);
 
 export default { compose, withPropTypes };

@@ -26,11 +26,11 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Sections({ items, selected, selectAll, selectItem }) {
-  const classes = useStyles();
-  const [opened, setOpened] = useState(null);
+function Section({ item, selected, selectItem, opened, setOpened, classes, nested }) {
+  const { children, title } = item;
+  const is = stateItem => !!stateItem && (stateItem.title === item.title);
 
-  const onItemClick = item => {
+  const onItemClick = () => {
     const { children } = item;
 
     if (children) {
@@ -40,50 +40,53 @@ function Sections({ items, selected, selectAll, selectItem }) {
     selectItem(item);
   };
 
-  const toggleItem = item => {
+  const toggleItem = () => {
     const { title } = item;
 
     setOpened(
-      (opened && (opened.title === title)) 
+      (opened && (opened.title === title))
         ? null : item
     );
   };
 
-  const isOpened = item => !!opened 
-    && (opened.title === item.title);
+  return (
+    <React.Fragment key={title}>
+      <ListItem button selected={is(selected)} onClick={onItemClick}>
+        {!nested
+          ? <ListItemText primary={title} />
+          : <ListItemText inset primary={item.title} className={classes.nested} />
+        }
+        {children && (is(opened) ? <ExpandLess /> : <ExpandMore />)}
+      </ListItem>
+      {children &&
+        <Collapse in={is(opened)} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {children.map(item =>
+              <Section
+                item={item} opened={opened} setOpened={setOpened} nested
+                classes={classes} selected={selected} selectItem={selectItem}
+              />
+            )}
+          </List>
+        </Collapse>
+      }
+    </React.Fragment>
+  );
+}
 
-  const isSelected = item => !!selected 
-    && (selected.title === item.title);
+Section.propTypes = {
+  item: PropTypes.object,
+  opened: PropTypes.object,
+  selected: PropTypes.object,
+  selectItem: PropTypes.func,
+  setOpened: PropTypes.func,
+  classes: PropTypes.object,
+  nested: PropTypes.bool,
+};
 
-  const renderItem = item => {
-    const { children, title } = item;
-
-    return (
-      <React.Fragment key={title}>
-        <ListItem button selected={isSelected(item)} onClick={partial(onItemClick, item)}>
-          <ListItemText primary={title} />
-          {children && (isOpened(item) ? <ExpandLess /> : <ExpandMore />)}
-        </ListItem>
-        {children && renderChildren(item)}
-      </React.Fragment>
-    );
-  };
-
-  const renderChildren = item => {
-    const { children } = item;    
-
-    return (
-      <Collapse in={isOpened(item)} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          {children.map(item => (
-            <ListItem button key={item.title} selected={isSelected(item)} onClick={partial(onItemClick, item)}>
-              <ListItemText inset primary={item.title} className={classes.nested} />
-            </ListItem>
-          ))}
-        </List>
-      </Collapse>
-    );
-  };
+function Sections({ items, selected, selectAll, selectItem }) {
+  const classes = useStyles();
+  const [opened, setOpened] = useState(null);
 
   return (
     <List component="nav">
@@ -92,7 +95,12 @@ function Sections({ items, selected, selectAll, selectItem }) {
           <ListItemText primary="All Stories" />
         </ListItem>
       )}
-      {items.map(renderItem)}
+      {items.map(item =>
+        <Section
+          item={item} opened={opened} setOpened={setOpened}
+          classes={classes} selected={selected} selectItem={selectItem}
+        />
+      )}
     </List>
   );
 }
@@ -107,7 +115,9 @@ const enhance = compose(
   })),
   withPropTypes({
     items: PropTypes.array,
-    selectedSection: PropTypes.object
+    selected: PropTypes.object,
+    selectItem: PropTypes.func,
+    selectAll: PropTypes.func,
   }),
 );
 

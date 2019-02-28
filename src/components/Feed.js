@@ -10,7 +10,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { makeStyles } from '@material-ui/styles';
-import { find, partial } from 'lodash';
+import { find } from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -49,44 +49,54 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+function FeedItem({ item, display, classes }) {
+  const { title, abstract, published_date, byline, multimedia, des_facet } = item;
+  const { url } = find(multimedia, {format: "mediumThreeByTwo210"}) || {};
+  const published = moment(published_date).format("MMMM D, YYYY h:mma");
+
+  const displayItem = () => display(item);
+
+  return (
+    <Card key={item.url} className={classes.card}>
+      <div className={classes.contentWrap}>
+        {url && <CardMedia className={classes.media} image={url} title={title} />}
+        <div className={classes.content}>
+          <CardHeader
+            title={title} subheader={published} action={
+              <Tooltip title="Read more...">
+                <IconButton onClick={displayItem}><OpenInNewIcon /></IconButton>
+              </Tooltip>
+            }
+          />
+          <CardContent>
+            <Typography component="p">{abstract}</Typography>
+          </CardContent>
+        </div>
+      </div>
+      <CardActions className={classes.actions} disableActionSpacing>
+        {byline && <Typography component="span" variant="body1" color="textSecondary" className={classes.byline}>{byline}</Typography>}
+        {(des_facet || []).map(tag => <Chip key={tag} avatar={<Avatar>#</Avatar>} label={tag} className={classes.chip} />)}
+      </CardActions>
+    </Card>
+  );
+}
+
+FeedItem.propTypes = {
+  classes: PropTypes.object,
+  item: PropTypes.object,
+  display: PropTypes.func
+};
+
 function Feed({ items, display }) {
   const classes = useStyles();
-
-  const renderItem = item => {
-    const { title, abstract, published_date, byline, multimedia, des_facet } = item;
-    const { url } = find(multimedia, {format: "mediumThreeByTwo210"}) || {};
-    const published = moment(published_date).format("MMMM D, YYYY h:mma");
-  
-    return (
-      <Card key={item.url} className={classes.card}>
-        <div className={classes.contentWrap}>
-          {url && <CardMedia className={classes.media} image={url} title={title} />}
-          <div className={classes.content}>
-            <CardHeader
-              title={title} subheader={published} action={
-                <Tooltip title="Read more...">
-                  <IconButton onClick={partial(display, item)}><OpenInNewIcon /></IconButton>
-                </Tooltip>
-              }
-            />
-            <CardContent>
-              <Typography component="p">{abstract}</Typography>
-            </CardContent>
-          </div>
-        </div>
-        <CardActions className={classes.actions} disableActionSpacing>
-          {byline && <Typography component="span" variant="body1" color="textSecondary" className={classes.byline}>{byline}</Typography>}
-          {(des_facet || []).map(tag => <Chip key={tag} avatar={<Avatar>#</Avatar>} label={tag} className={classes.chip} />)}
-        </CardActions>
-      </Card>
-    )
-  }
 
   return (
     <div>
       <ScrollToTopOnMount />
       <FeedLabel />
-      {items.map(renderItem)}
+      {items.map(item =>
+        <FeedItem item={item} display={display} classes={classes} />
+      )}
     </div>
   );
 }
@@ -95,17 +105,18 @@ const enhance = compose(
   connect(state => {
     const { stories, selectedSection, sectionStories } = state;
     let items = stories;
-  
+
     if (selectedSection) {
       items = sectionStories[selectedSection.title];
     }
-  
+
     return { items };
   }, dispatch => ({
     display: story => dispatch(displayStory(story))
   })),
   withPropTypes({
-    items: PropTypes.array
+    items: PropTypes.array,
+    display: PropTypes.func
   })
 );
 
