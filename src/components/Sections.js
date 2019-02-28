@@ -5,7 +5,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/styles';
-import { isEmpty, partial } from 'lodash';
+import { isEmpty } from 'lodash';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
@@ -31,26 +31,20 @@ function Section({ item, selected, selectItem, opened, setOpened, classes, neste
   const is = stateItem => !!stateItem && (stateItem.title === item.title);
 
   const onItemClick = () => {
-    const { children } = item;
+    const { children, title } = item;
 
     if (children) {
-      toggleItem(item);
+      setOpened(
+        (opened && (opened.title === title))
+          ? null : item
+      );
     }
 
     selectItem(item);
   };
 
-  const toggleItem = () => {
-    const { title } = item;
-
-    setOpened(
-      (opened && (opened.title === title))
-        ? null : item
-    );
-  };
-
   return (
-    <React.Fragment key={title}>
+    <React.Fragment>
       <ListItem button selected={is(selected)} onClick={onItemClick}>
         {!nested
           ? <ListItemText primary={title} />
@@ -63,7 +57,7 @@ function Section({ item, selected, selectItem, opened, setOpened, classes, neste
           <List component="div" disablePadding>
             {children.map(item =>
               <Section
-                item={item} opened={opened} setOpened={setOpened} nested
+                item={item} opened={opened} setOpened={setOpened} nested key={item.title}
                 classes={classes} selected={selected} selectItem={selectItem}
               />
             )}
@@ -97,7 +91,7 @@ function Sections({ items, selected, selectAll, selectItem }) {
       )}
       {items.map(item =>
         <Section
-          item={item} opened={opened} setOpened={setOpened}
+          item={item} opened={opened} setOpened={setOpened} key={item.title}
           classes={classes} selected={selected} selectItem={selectItem}
         />
       )}

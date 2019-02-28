@@ -57,7 +57,7 @@ function FeedItem({ item, display, classes }) {
   const displayItem = () => display(item);
 
   return (
-    <Card key={item.url} className={classes.card}>
+    <Card className={classes.card}>
       <div className={classes.contentWrap}>
         {url && <CardMedia className={classes.media} image={url} title={title} />}
         <div className={classes.content}>
@@ -95,7 +95,7 @@ function Feed({ items, display }) {
       <ScrollToTopOnMount />
       <FeedLabel />
       {items.map(item =>
-        <FeedItem item={item} display={display} classes={classes} />
+        <FeedItem key={item.url} item={item} display={display} classes={classes} />
       )}
     </div>
   );
