@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
+import { StoreContext } from 'redux-react-hook';
 import theme from './theme';
 import store from './store';
 import './index.css';
@@ -8,13 +8,12 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import ThemeProvider from '@material-ui/styles/ThemeProvider';
 
-
 ReactDOM.render(
-  <Provider store={store}>
+  <StoreContext.Provider value={store}>
     <ThemeProvider theme={theme}>
       <App />
     </ThemeProvider>
-  </Provider>, 
+  </StoreContext.Provider>,
   document.getElementById('root')
 );
 

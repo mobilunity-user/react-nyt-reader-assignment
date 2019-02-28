@@ -6,11 +6,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import ChromeReaderModeIcon from '@material-ui/icons/ChromeReaderMode';
 import { makeStyles } from '@material-ui/styles';
-import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useMappedState } from 'redux-react-hook';
 import { fetchStories } from './actions/topStories';
-import { compose, withPropTypes } from './api/enhance';
 import Article from './components/Article';
 import Feed from './components/Feed';
 import Sections from './components/Sections';
@@ -43,9 +41,20 @@ const useStyles = makeStyles(theme => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-function App({ bootstrap, fetching, showFeed }) {
+export default function App() {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const [bootstrapped, setBootstrapped] = useState(false);
+
+  const mapState = useCallback(
+    state => ({
+      fetching: state.fetching,
+      showFeed: !state.selectedStory
+    }), [],
+  );
+
+  const { fetching, showFeed } = useMappedState(mapState);
+  const bootstrap = useCallback(() => dispatch(fetchStories()), []);
 
   useEffect(() => {
     if (bootstrapped) {
@@ -84,19 +93,3 @@ function App({ bootstrap, fetching, showFeed }) {
     </div>
   );
 }
-
-const enhance = compose(  
-  connect(state => ({
-    fetching: state.fetching,
-    showFeed: !state.selectedStory
-  }), dispatch => ({
-    bootstrap: () => dispatch(fetchStories())
-  })),
-  withPropTypes({
-    fetching: PropTypes.bool,
-    bootstrap: PropTypes.func,
-    showFeed: PropTypes.bool,
-  }),
-);
-
-export default enhance(App);

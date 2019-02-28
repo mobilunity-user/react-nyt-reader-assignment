@@ -9,13 +9,11 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { makeStyles } from '@material-ui/styles';
 import { filter, find, join } from 'lodash';
 import moment from 'moment';
-import PropTypes from 'prop-types';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback } from 'react';
 import { displayLastOpened } from '../actions/sectionStories';
-import { compose, withPropTypes } from '../api/enhance';
 import FeedLabel from './FeedLabel';
 import ScrollToTopOnMount from './ScrollToTopOnMount';
+import { useDispatch, useMappedState } from 'redux-react-hook';
 
 const useStyles = makeStyles(theme => ({
   media: {
@@ -35,8 +33,26 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Article({ item, contents, goBack }) {
+export default function Article() {
   const classes = useStyles();
+  const dispatch = useDispatch();
+
+  const mapState = useCallback(
+    state => {
+      const { selectedStory, storiesContents } = state;
+      const item = selectedStory;
+      let contents = [];
+
+      if (item) {
+        contents = storiesContents[item.url];
+      }
+
+      return { item, contents };
+    }, [],
+  );
+
+  const { item, contents } = useMappedState(mapState);
+  const goBack = useCallback(() => dispatch(displayLastOpened()), []);
   const { title, abstract, published_date, byline, multimedia } = item;
   const { url } = find(multimedia, {format: "superJumbo"}) || {};
   const published = moment(published_date).format("MMMM D, YYYY h:mma");
@@ -71,29 +87,4 @@ function Article({ item, contents, goBack }) {
       </Card>
     </div>
   )
-}
-
-const enhance = compose(
-  connect(
-    state => {
-      const { selectedStory, storiesContents } = state;
-      const item = selectedStory;
-      let contents = [];
-    
-      if (item) {
-        contents = storiesContents[item.url];
-      }
-    
-      return { item, contents };
-    },
-    dispatch => ({
-      goBack: () => dispatch(displayLastOpened())
-    })
-  ),
-  withPropTypes({
-    item: PropTypes.object,
-    contents: PropTypes.array
-  })
-);
-
-export default enhance(Article);
+};

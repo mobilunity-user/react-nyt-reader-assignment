@@ -5,12 +5,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/styles';
-import { isEmpty, partial } from 'lodash';
+import { isEmpty } from 'lodash';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useDispatch, useMappedState } from 'redux-react-hook';
 import { displayAll, displaySection } from '../actions/sectionStories';
-import { compose, withPropTypes } from '../api/enhance';
 import config from '../config';
 
 const { drawerWidth } = config.ui;
@@ -26,31 +25,27 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function Section({ item, selected, selectItem, opened, setOpened, classes, nested }) {
+function Section({ item, selected, opened, setOpened, classes, nested }) {
+  const dispatch = useDispatch();
   const { children, title } = item;
   const is = stateItem => !!stateItem && (stateItem.title === item.title);
+  const selectItem = useCallback(() => dispatch(displaySection(item)), [item]);
 
   const onItemClick = () => {
-    const { children } = item;
+    const { children, title } = item;
 
     if (children) {
-      toggleItem(item);
+      setOpened(
+        (opened && (opened.title === title))
+          ? null : item
+      );
     }
 
-    selectItem(item);
-  };
-
-  const toggleItem = () => {
-    const { title } = item;
-
-    setOpened(
-      (opened && (opened.title === title))
-        ? null : item
-    );
+    selectItem();
   };
 
   return (
-    <React.Fragment key={title}>
+    <React.Fragment>
       <ListItem button selected={is(selected)} onClick={onItemClick}>
         {!nested
           ? <ListItemText primary={title} />
@@ -63,8 +58,8 @@ function Section({ item, selected, selectItem, opened, setOpened, classes, neste
           <List component="div" disablePadding>
             {children.map(item =>
               <Section
-                item={item} opened={opened} setOpened={setOpened} nested
-                classes={classes} selected={selected} selectItem={selectItem}
+                item={item} opened={opened} setOpened={setOpened}
+                nested classes={classes} selected={selected} key={item.title}
               />
             )}
           </List>
@@ -78,15 +73,25 @@ Section.propTypes = {
   item: PropTypes.object,
   opened: PropTypes.object,
   selected: PropTypes.object,
-  selectItem: PropTypes.func,
   setOpened: PropTypes.func,
   classes: PropTypes.object,
   nested: PropTypes.bool,
 };
 
-function Sections({ items, selected, selectAll, selectItem }) {
+export default function Sections() {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const [opened, setOpened] = useState(null);
+  const selectAll = useCallback(() => dispatch(displayAll()), []);
+
+  const mapState = useCallback(
+    state => ({
+      items: state.sections,
+      selected: state.selectedSection
+    }), [],
+  );
+
+  const { items, selected } = useMappedState(mapState);
 
   return (
     <List component="nav">
@@ -98,27 +103,9 @@ function Sections({ items, selected, selectAll, selectItem }) {
       {items.map(item =>
         <Section
           item={item} opened={opened} setOpened={setOpened}
-          classes={classes} selected={selected} selectItem={selectItem}
+          classes={classes} selected={selected} key={item.title}
         />
       )}
     </List>
   );
-}
-
-const enhance = compose(
-  connect(state => ({
-    items: state.sections,
-    selected: state.selectedSection
-  }), dispatch => ({
-    selectItem: item => dispatch(displaySection(item)),
-    selectAll: () => dispatch(displayAll())
-  })),
-  withPropTypes({
-    items: PropTypes.array,
-    selected: PropTypes.object,
-    selectItem: PropTypes.func,
-    selectAll: PropTypes.func,
-  }),
-);
-
-export default enhance(Sections);
+};

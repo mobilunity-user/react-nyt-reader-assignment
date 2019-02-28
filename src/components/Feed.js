@@ -13,12 +13,11 @@ import { makeStyles } from '@material-ui/styles';
 import { find } from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback } from 'react';
 import { displayStory } from '../actions/storyContents';
-import { compose, withPropTypes } from '../api/enhance';
 import FeedLabel from './FeedLabel';
 import ScrollToTopOnMount from './ScrollToTopOnMount';
+import { useDispatch, useMappedState } from 'redux-react-hook';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -49,15 +48,15 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function FeedItem({ item, display, classes }) {
+function FeedItem({ item, classes }) {
+  const dispatch = useDispatch();
   const { title, abstract, published_date, byline, multimedia, des_facet } = item;
   const { url } = find(multimedia, {format: "mediumThreeByTwo210"}) || {};
   const published = moment(published_date).format("MMMM D, YYYY h:mma");
-
-  const displayItem = () => display(item);
+  const displayItem = useCallback(() => dispatch(displayStory(item)), [item]);
 
   return (
-    <Card key={item.url} className={classes.card}>
+    <Card className={classes.card}>
       <div className={classes.contentWrap}>
         {url && <CardMedia className={classes.media} image={url} title={title} />}
         <div className={classes.content}>
@@ -83,41 +82,34 @@ function FeedItem({ item, display, classes }) {
 
 FeedItem.propTypes = {
   classes: PropTypes.object,
-  item: PropTypes.object,
-  display: PropTypes.func
+  item: PropTypes.object
 };
 
-function Feed({ items, display }) {
+export default function Feed() {
   const classes = useStyles();
+
+  const mapState = useCallback(
+    state => {
+      const { stories, selectedSection, sectionStories } = state;
+      let items = stories;
+
+      if (selectedSection) {
+        items = sectionStories[selectedSection.title];
+      }
+
+      return { items };
+    }, [],
+  );
+
+  const { items } = useMappedState(mapState);
 
   return (
     <div>
       <ScrollToTopOnMount />
       <FeedLabel />
       {items.map(item =>
-        <FeedItem item={item} display={display} classes={classes} />
+        <FeedItem key={item.url} item={item} classes={classes} />
       )}
     </div>
   );
 }
-
-const enhance = compose(
-  connect(state => {
-    const { stories, selectedSection, sectionStories } = state;
-    let items = stories;
-
-    if (selectedSection) {
-      items = sectionStories[selectedSection.title];
-    }
-
-    return { items };
-  }, dispatch => ({
-    display: story => dispatch(displayStory(story))
-  })),
-  withPropTypes({
-    items: PropTypes.array,
-    display: PropTypes.func
-  })
-);
-
-export default enhance(Feed);
